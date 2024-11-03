@@ -120,16 +120,62 @@ def lru(sequence, pages, n_pages):
     print(f"Hit rate: ({hit_rate}/{len(sequence)})")
     print(f"Miss rate: ({miss_rate}/{len(sequence)})")
 
-def main():
-    if len(sys.argv) != 3:
-        print("Error: Incorrect number of argument values.")
-        print("Usage: python main.py <number_of_pages> <sequence_of_pages_separeted_by_coma>")
-        sys.exit()
+def opt(sequence, pages, n_pages):
+    is_full = False
+    page_index = 0
 
+    hit_rate = 0
+    miss_rate = 0
+
+    for sequence_index, number in enumerate(sequence):
+        is_hit = False
+
+        for page_pos, page in enumerate(pages):
+            if sequence_index == n_pages:
+                is_full = True
+
+            if number == page:
+                hit_rate += 1
+                is_hit = True
+                #page_index = page_pos
+                break
+
+        pages[page_index] = number
+
+        print(f"page: {number}")
+        print_mem(pages, page_index, is_hit)
+        print()
+
+        if not is_full:
+            if page_index == n_pages - 1:
+                page_index = 0
+            else:
+                page_index += 1
+
+    print(f"Hit rate: ({hit_rate}/{len(sequence)})")
+    print(f"Miss rate: ({miss_rate}/{len(sequence)})")
+
+def main():
+    if len(sys.argv) != 4:
+        print("Error: Incorrect number of argument values.")
+        print("Usage: python main.py <number_of_pages> <sequence_of_pages_separeted_by_coma> <algorithm>")
+        sys.exit(1)
+
+    algorithm = sys.argv[3]
     n_pages = int(sys.argv[1])
     sequence = (sys.argv[2]).split(",")
     sequence = [int(x) for x in sequence]
     pages = [-1 for x in range(n_pages)]
+
+    if algorithm.lower() == "fifo":
+        fifo(sequence, pages, n_pages)
+    elif algorithm.lower == "opt":
+        opt(sequence, pages, n_pages)
+    elif algorithm.lower() == "lru":
+        lru(sequence, pages, n_pages)
+    else:
+        print("Error: Invalid algorithm")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
