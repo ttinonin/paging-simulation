@@ -120,6 +120,34 @@ def lru(sequence, pages, n_pages):
     print(f"Hit rate: ({hit_rate}/{len(sequence)})")
     print(f"Miss rate: ({miss_rate}/{len(sequence)})")
 
+def opt_check_future(page, page_pos, sequence, sequence_index):
+    for i in range(sequence_index + 1, len(sequence)):
+        if sequence[i] == page:
+            return {
+                "page": page,
+                "page_pos": page_pos,
+                "next_appears": i
+            }
+        
+    return {
+        "page": page,
+        "page_pos": page_pos,
+        "next_appears": float('inf')
+    }
+
+def opt_get_highest_memory(memory):
+    highest = {
+        "page": -1,
+        "page_pos": -1,
+        "next_appears": -1
+    }
+
+    for i in memory:
+        if i["next_appears"] > highest["next_appears"]:
+            highest = i
+
+    return highest
+
 def opt(sequence, pages, n_pages):
     is_full = False
     page_index = 0
@@ -127,8 +155,11 @@ def opt(sequence, pages, n_pages):
     hit_rate = 0
     miss_rate = 0
 
+    memory = []
+
     for sequence_index, number in enumerate(sequence):
         is_hit = False
+        memory.clear()
 
         for page_pos, page in enumerate(pages):
             if sequence_index == n_pages:
@@ -137,9 +168,17 @@ def opt(sequence, pages, n_pages):
             if number == page:
                 hit_rate += 1
                 is_hit = True
-                #page_index = page_pos
+                page_index = page_pos
                 break
 
+            if is_full:
+                new = opt_check_future(page, page_pos, sequence, sequence_index)
+                memory.append(new)
+        
+        if is_full and not is_hit:
+            highest = opt_get_highest_memory(memory)
+            page_index = highest["page_pos"]
+        
         pages[page_index] = number
 
         print(f"page: {number}")
@@ -151,6 +190,9 @@ def opt(sequence, pages, n_pages):
                 page_index = 0
             else:
                 page_index += 1
+
+        if not is_hit:
+            miss_rate += 1
 
     print(f"Hit rate: ({hit_rate}/{len(sequence)})")
     print(f"Miss rate: ({miss_rate}/{len(sequence)})")
@@ -169,7 +211,7 @@ def main():
 
     if algorithm.lower() == "fifo":
         fifo(sequence, pages, n_pages)
-    elif algorithm.lower == "opt":
+    elif algorithm.lower() == "opt":
         opt(sequence, pages, n_pages)
     elif algorithm.lower() == "lru":
         lru(sequence, pages, n_pages)
